@@ -50,8 +50,9 @@ function App() {
 
   const handleSubmitJob = async (jobData) => {
     try {
-      await createJob(jobData);
+      const newJob = await createJob(jobData);
       await loadJobs();
+      setSelectedJob(newJob);
       setViewMode('list');
     } catch (error) {
       console.error('Error creating job:', error);

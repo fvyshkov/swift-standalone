@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import PlainTextResponse
 from sqlalchemy.orm import Session
 from typing import List
 import os
@@ -96,7 +97,7 @@ def delete_job(job_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "Job deleted successfully"}
 
-@app.get("/api/files/{file_id}/content")
+@app.get("/api/files/{file_id}/content", response_class=PlainTextResponse)
 def get_file_content(file_id: int, db: Session = Depends(get_db)):
     db_file = db.query(models.JobFile).filter(models.JobFile.id == file_id).first()
     if not db_file:
