@@ -1,23 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
-const JobForm = ({ onSubmit, lastJob }) => {
-  const defaultFolderIn = '/Users/fvyshkov/PycharmProjects/swift-standalone/data/folder_in';
-  const defaultFolderOut = '/Users/fvyshkov/PycharmProjects/swift-standalone/data/folder_out';
-
-  const [folderIn, setFolderIn] = useState(defaultFolderIn);
-  const [folderOut, setFolderOut] = useState(defaultFolderOut);
-
-  useEffect(() => {
-    if (lastJob) {
-      setFolderIn(lastJob.folder_in || defaultFolderIn);
-      setFolderOut(lastJob.folder_out || defaultFolderOut);
-    }
-  }, [lastJob]);
+const JobForm = ({ onSubmit }) => {
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (folderIn && folderOut) {
-      onSubmit({ folder_in: folderIn, folder_out: folderOut });
+    if (selectedFile) {
+      onSubmit(selectedFile);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file.name.endsWith('.zip')) {
+      setSelectedFile(file);
+    } else {
+      alert('Please select a ZIP file');
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file && file.name.endsWith('.zip')) {
+      setSelectedFile(file);
+    } else {
+      alert('Please select a ZIP file');
     }
   };
 
@@ -25,27 +44,37 @@ const JobForm = ({ onSubmit, lastJob }) => {
     <div style={styles.container}>
       <h2 style={styles.title}>Create New Job</h2>
       <form onSubmit={handleSubmit} style={styles.form} id="job-form">
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Folder In:</label>
+        <div
+          style={{
+            ...styles.dropZone,
+            ...(isDragging ? styles.dropZoneActive : {})
+          }}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onClick={() => document.getElementById('file-input').click()}
+        >
           <input
-            type="text"
-            value={folderIn}
-            onChange={(e) => setFolderIn(e.target.value)}
-            style={styles.input}
-            placeholder="Path to input folder"
-            required
+            id="file-input"
+            type="file"
+            accept=".zip"
+            onChange={handleFileChange}
+            style={styles.fileInput}
           />
-        </div>
-        <div style={styles.formGroup}>
-          <label style={styles.label}>Folder Out:</label>
-          <input
-            type="text"
-            value={folderOut}
-            onChange={(e) => setFolderOut(e.target.value)}
-            style={styles.input}
-            placeholder="Path to output folder"
-            required
-          />
+          <i className="bi bi-cloud-upload" style={styles.uploadIcon}></i>
+          {selectedFile ? (
+            <div>
+              <p style={styles.fileName}>{selectedFile.name}</p>
+              <p style={styles.fileSize}>
+                {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+              </p>
+            </div>
+          ) : (
+            <div>
+              <p style={styles.dropText}>Drag & drop ZIP file here</p>
+              <p style={styles.orText}>or click to browse</p>
+            </div>
+          )}
         </div>
       </form>
     </div>
@@ -68,22 +97,48 @@ const styles = {
     borderRadius: '8px',
     boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
   },
-  formGroup: {
+  dropZone: {
+    border: '3px dashed #ddd',
+    borderRadius: '8px',
+    padding: '60px 20px',
+    textAlign: 'center',
+    cursor: 'pointer',
+    transition: 'all 0.3s',
+    backgroundColor: '#fafafa',
+  },
+  dropZoneActive: {
+    borderColor: '#2196F3',
+    backgroundColor: '#e3f2fd',
+  },
+  fileInput: {
+    display: 'none',
+  },
+  uploadIcon: {
+    fontSize: '48px',
+    color: '#2196F3',
     marginBottom: '20px',
   },
-  label: {
-    display: 'block',
-    marginBottom: '8px',
-    color: '#555',
+  dropText: {
+    fontSize: '18px',
+    color: '#333',
+    margin: '10px 0',
     fontWeight: 'bold',
   },
-  input: {
-    width: '100%',
-    padding: '10px',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
+  orText: {
     fontSize: '14px',
-    boxSizing: 'border-box',
+    color: '#999',
+    margin: '5px 0',
+  },
+  fileName: {
+    fontSize: '16px',
+    color: '#333',
+    margin: '10px 0',
+    fontWeight: 'bold',
+  },
+  fileSize: {
+    fontSize: '14px',
+    color: '#666',
+    margin: '5px 0',
   }
 };
 

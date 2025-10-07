@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from sqlalchemy.orm import Session
@@ -6,6 +6,8 @@ from typing import List
 import os
 from pathlib import Path
 import socketio
+import zipfile
+import shutil
 
 import models
 import schemas
@@ -53,21 +55,49 @@ def get_job(job_id: int, db: Session = Depends(get_db)):
     return job
 
 @app.post("/api/jobs", response_model=schemas.Job)
-def create_job(job: schemas.JobCreate, db: Session = Depends(get_db)):
+async def create_job(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    # Base data directory
+    data_dir = Path("data")
+    data_dir.mkdir(exist_ok=True)
+
     # Create job
     db_job = models.Job(
-        folder_in=job.folder_in,
-        folder_out=job.folder_out,
+        folder_in="",  # Will be set after extraction
+        folder_out="",  # Will be set after extraction
         user="user@example.com"
     )
     db.add(db_job)
     db.commit()
     db.refresh(db_job)
 
-    # Load files from folder_in
-    folder_path = Path(job.folder_in)
-    if folder_path.exists() and folder_path.is_dir():
-        for file_path in folder_path.iterdir():
+    # Create job-specific folders
+    job_folder_in = data_dir / "folder_in" / str(db_job.id)
+    job_folder_out = data_dir / "folder_out" / str(db_job.id)
+    job_folder_in.mkdir(parents=True, exist_ok=True)
+    job_folder_out.mkdir(parents=True, exist_ok=True)
+
+    # Update job with actual paths
+    db_job.folder_in = str(job_folder_in)
+    db_job.folder_out = str(job_folder_out)
+    db.commit()
+
+    # Save and extract ZIP file
+    zip_path = data_dir / f"temp_{db_job.id}.zip"
+    try:
+        # Save uploaded file
+        with open(zip_path, "wb") as buffer:
+            content = await file.read()
+            buffer.write(content)
+
+        # Extract ZIP
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            zip_ref.extractall(job_folder_in)
+
+        # Load files into database
+        for file_path in job_folder_in.rglob('*'):
             if file_path.is_file():
                 # Read file content
                 try:
@@ -81,7 +111,7 @@ def create_job(job: schemas.JobCreate, db: Session = Depends(get_db)):
                     job_id=db_job.id,
                     filename=file_path.name,
                     filepath=str(file_path),
-                    content=file_content,  # Store content in DB
+                    content=file_content,
                     state=FileState.INIT
                 )
                 db.add(db_file)
@@ -91,6 +121,11 @@ def create_job(job: schemas.JobCreate, db: Session = Depends(get_db)):
 
         # Start background processing
         start_job_processing(db_job.id, sio)
+
+    finally:
+        # Clean up temp ZIP file
+        if zip_path.exists():
+            zip_path.unlink()
 
     return db_job
 

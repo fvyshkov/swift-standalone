@@ -12,8 +12,15 @@ export const getJob = async (jobId) => {
   return response.data;
 };
 
-export const createJob = async (jobData) => {
-  const response = await axios.post(`${API_BASE_URL}/api/jobs`, jobData);
+export const createJob = async (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await axios.post(`${API_BASE_URL}/api/jobs`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
   return response.data;
 };
 
