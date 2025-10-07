@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum as SQLEnum
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum as SQLEnum, Text
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -49,6 +49,7 @@ class JobFile(Base):
     job_id = Column(Integer, ForeignKey("jobs.id"))
     filename = Column(String)
     filepath = Column(String)
+    content = Column(Text)  # Store file content in DB
     state = Column(SQLEnum(FileState), default=FileState.INIT)
     created_at = Column(DateTime, default=datetime.utcnow)
 

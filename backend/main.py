@@ -65,10 +65,19 @@ def create_job(job: schemas.JobCreate, db: Session = Depends(get_db)):
     if folder_path.exists() and folder_path.is_dir():
         for file_path in folder_path.iterdir():
             if file_path.is_file():
+                # Read file content
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        file_content = f.read()
+                except Exception as e:
+                    print(f"Error reading file {file_path}: {e}")
+                    file_content = ""
+
                 db_file = models.JobFile(
                     job_id=db_job.id,
                     filename=file_path.name,
                     filepath=str(file_path),
+                    content=file_content,  # Store content in DB
                     state=FileState.INIT
                 )
                 db.add(db_file)
@@ -115,16 +124,8 @@ def get_file_content(file_id: int, db: Session = Depends(get_db)):
     if not db_file:
         raise HTTPException(status_code=404, detail="File not found")
 
-    try:
-        file_path = Path(db_file.filepath)
-        if not file_path.exists():
-            raise HTTPException(status_code=404, detail="File not found on disk")
-
-        with open(file_path, 'r', encoding='utf-8') as f:
-            content = f.read()
-        return content
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error reading file: {str(e)}")
+    # Return content from database
+    return db_file.content or ""
 
 if __name__ == "__main__":
     import uvicorn
