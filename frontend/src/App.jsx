@@ -20,6 +20,10 @@ function App() {
       setLoading(true);
       const data = await getJobs();
       setJobs(data);
+      // Auto-select first job if available and in list view
+      if (data.length > 0 && viewMode === 'list') {
+        setSelectedJob(data[0]);
+      }
     } catch (error) {
       console.error('Error loading jobs:', error);
       alert('Failed to load jobs. Make sure the server is running.');
@@ -34,7 +38,10 @@ function App() {
 
   const handleViewList = () => {
     setViewMode('list');
-    setSelectedJob(null);
+    // Auto-select first job when returning to list
+    if (jobs.length > 0) {
+      setSelectedJob(jobs[0]);
+    }
   };
 
   const handleSubmitJob = async (jobData) => {
@@ -56,14 +63,12 @@ function App() {
   const handleViewFiles = () => {
     if (selectedJob) {
       setViewMode('files');
-    } else {
-      alert('Select a job to view files');
     }
   };
 
   const handleBackToList = () => {
     setViewMode('list');
-    setSelectedJob(null);
+    // Keep the selected job when returning from files view
   };
 
   if (loading) {
@@ -81,15 +86,20 @@ function App() {
         onView={handleViewList}
         viewMode={viewMode}
         onViewFiles={handleViewFiles}
-        showFilesButton={selectedJob !== null && viewMode === 'list'}
+        hasSelectedJob={selectedJob !== null}
       />
       {viewMode === 'list' && (
-        <JobList jobs={jobs} onJobClick={handleJobClick} />
+        <JobList
+          jobs={jobs}
+          onJobClick={handleJobClick}
+          selectedJobId={selectedJob?.id}
+        />
       )}
       {viewMode === 'add' && (
         <JobForm
           onSubmit={handleSubmitJob}
           onCancel={handleViewList}
+          lastJob={jobs.length > 0 ? jobs[0] : null}
         />
       )}
       {viewMode === 'files' && selectedJob && (

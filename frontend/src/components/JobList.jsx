@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-const JobList = ({ jobs, onJobClick }) => {
+const JobList = ({ jobs, onJobClick, selectedJobId }) => {
+  const [hoveredJobId, setHoveredJobId] = useState(null);
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleString('en-US');
   };
@@ -25,6 +27,17 @@ const JobList = ({ jobs, onJobClick }) => {
     return texts[status] || status;
   };
 
+  const getRowStyle = (job) => {
+    const isSelected = selectedJobId === job.id;
+    const isHovered = hoveredJobId === job.id;
+
+    return {
+      ...styles.row,
+      backgroundColor: isSelected ? '#e3f2fd' : (isHovered ? '#f5f5f5' : 'white'),
+      fontWeight: isSelected ? 'bold' : 'normal',
+    };
+  };
+
   return (
     <div style={styles.container}>
       <h2 style={styles.title}>Job List</h2>
@@ -44,7 +57,9 @@ const JobList = ({ jobs, onJobClick }) => {
             <tr
               key={job.id}
               onClick={() => onJobClick(job)}
-              style={styles.row}
+              onMouseEnter={() => setHoveredJobId(job.id)}
+              onMouseLeave={() => setHoveredJobId(null)}
+              style={getRowStyle(job)}
             >
               <td style={styles.td}>{job.id}</td>
               <td style={styles.td}>

@@ -1,8 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const JobForm = ({ onSubmit, onCancel }) => {
+const JobForm = ({ onSubmit, onCancel, lastJob }) => {
   const [folderIn, setFolderIn] = useState('');
   const [folderOut, setFolderOut] = useState('');
+
+  useEffect(() => {
+    if (lastJob) {
+      setFolderIn(lastJob.folder_in || '');
+      setFolderOut(lastJob.folder_out || '');
+    }
+  }, [lastJob]);
 
   const handleSubmit = (e) => {
     e.preventDefault();

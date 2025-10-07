@@ -1,118 +1,118 @@
-# Task Manager - FastAPI + React SPA
+# Job Manager - FastAPI + React SPA
 
-Приложение для управления задачами с автоматической загрузкой файлов из папки.
+Application for managing jobs with automatic file loading from folders.
 
-## Структура проекта
+## Project Structure
 
 ```
 swift-standalone/
-├── backend/           # FastAPI сервер
+├── backend/           # FastAPI server
 │   ├── main.py       # API endpoints
-│   ├── models.py     # SQLAlchemy модели
-│   ├── schemas.py    # Pydantic схемы
-│   ├── database.py   # Настройка БД
+│   ├── models.py     # SQLAlchemy models
+│   ├── schemas.py    # Pydantic schemas
+│   ├── database.py   # Database configuration
 │   └── requirements.txt
-├── frontend/         # React приложение
+├── frontend/         # React application
 │   ├── src/
-│   │   ├── components/  # React компоненты
-│   │   ├── api/        # API клиент
-│   │   └── types/      # Типы данных
+│   │   ├── components/  # React components
+│   │   ├── api/        # API client
+│   │   └── types/      # Data types
 │   └── package.json
 └── data/
-    ├── folder_in/    # Входные файлы
-    └── folder_out/   # Выходные файлы
+    ├── folder_in/    # Input files
+    └── folder_out/   # Output files
 ```
 
-## Функциональность
+## Features
 
-### Задачи (Tasks)
-- **Статусы**: pending, processing, completed, error
-- **Поля**: ID, дата создания, пользователь, folder_in, folder_out
-- При создании задачи автоматически загружаются все файлы из folder_in
+### Jobs
+- **Statuses**: pending, processing, completed, error
+- **Fields**: ID, creation date, user, folder_in, folder_out
+- When creating a job, all files from folder_in are automatically loaded
 
-### Файлы (Files)
-- **Статусы**: init, active, success, error
-- **Поля**: ID, имя файла, путь, статус, дата создания
-- Каждый файл связан с задачей
-- По умолчанию создаются в статусе "init"
+### Files
+- **Statuses**: init, active, success, error
+- **Fields**: ID, filename, path, status, creation date
+- Each file is linked to a job
+- Created in "init" status by default
 
-### Интерфейс
-- **Toolbar**: кнопки "Добавить", "Просмотр", "Список файлов"
-- **Список задач**: таблица со всеми задачами
-- **Форма создания**: ввод путей folder_in и folder_out
-- **Список файлов**: просмотр файлов конкретной задачи
+### Interface
+- **Toolbar**: Icon buttons with tooltips - "Add Job", "Job List", "View Files"
+- **Job List**: Table with all jobs, click to select
+- **Create Form**: Input paths for folder_in and folder_out (pre-filled from last job)
+- **File List**: View files for selected job
 
-## Установка и запуск
+## Installation and Running
 
 ### Backend (FastAPI)
 
 ```bash
-# Переход в папку backend
+# Navigate to backend folder
 cd backend
 
-# Создание виртуального окружения
+# Create virtual environment
 python -m venv venv
 
-# Активация виртуального окружения
+# Activate virtual environment
 # macOS/Linux:
 source venv/bin/activate
 # Windows:
 # venv\Scripts\activate
 
-# Установка зависимостей
+# Install dependencies
 pip install -r requirements.txt
 
-# Запуск сервера
+# Run server
 python main.py
 ```
 
-Сервер будет доступен на http://localhost:8000
+Server will be available at http://localhost:8001
 
 ### Frontend (React)
 
 ```bash
-# Переход в папку frontend (в новом терминале)
+# Navigate to frontend folder (in new terminal)
 cd frontend
 
-# Установка зависимостей
+# Install dependencies
 npm install
 
-# Запуск dev сервера
+# Run dev server
 npm run dev
 ```
 
-Приложение будет доступно на http://localhost:3000
+Application will be available at http://localhost:3000
 
-## Использование
+## Usage
 
-1. Создайте тестовые файлы в папке `data/folder_in/`:
+1. Create test files in `data/folder_in/` folder:
    ```bash
    echo "test 1" > data/folder_in/file1.txt
    echo "test 2" > data/folder_in/file2.txt
    ```
 
-2. Откройте приложение в браузере: http://localhost:3000
+2. Open application in browser: http://localhost:3000
 
-3. Нажмите "Добавить" и введите пути:
+3. Click ➕ icon and enter paths:
    - Folder In: `data/folder_in`
    - Folder Out: `data/folder_out`
 
-4. После создания задачи файлы автоматически загрузятся из folder_in
+4. After job creation, files will be automatically loaded from folder_in
 
-5. Выберите задачу в списке и нажмите "Список файлов" для просмотра
+5. Click on a job in the list to select it, then click 📁 icon to view files
 
 ## API Endpoints
 
-- `GET /api/tasks` - Получить все задачи
-- `GET /api/tasks/{task_id}` - Получить задачу по ID
-- `POST /api/tasks` - Создать новую задачу
-- `GET /api/tasks/{task_id}/files` - Получить файлы задачи
-- `PATCH /api/files/{file_id}/status` - Обновить статус файла
+- `GET /api/jobs` - Get all jobs
+- `GET /api/jobs/{job_id}` - Get job by ID
+- `POST /api/jobs` - Create new job
+- `GET /api/jobs/{job_id}/files` - Get job files
+- `PATCH /api/files/{file_id}/status` - Update file status
 
-## База данных
+## Database
 
-SQLite база данных `tasks.db` создается автоматически при первом запуске.
+SQLite database `jobs.db` is created automatically on first run.
 
-Таблицы:
-- `tasks` - задачи
-- `task_files` - файлы задач (связь один-ко-многим)
+Tables:
+- `jobs` - jobs
+- `job_files` - job files (one-to-many relationship)
