@@ -11,7 +11,7 @@ import asyncio
 from datetime import datetime
 
 def process_job_files(job_id: int, sio=None):
-    """Background processor for job files with 5-second delay and 50/50 success/error rate"""
+    """Background processor for job files with 2-second delay and 50/50 success/error rate"""
     db = SessionLocal()
     try:
         job = db.query(models.Job).filter(models.Job.id == job_id).first()
@@ -32,8 +32,8 @@ def process_job_files(job_id: int, sio=None):
             if sio:
                 asyncio.run(sio.emit('job_updated', {'job_id': job_id}))
 
-            # Wait 5 seconds to simulate processing
-            time.sleep(5)
+            # Wait 2 seconds to simulate processing
+            time.sleep(2)
 
             # 50/50 chance of success or error
             success = random.choice([True, False])

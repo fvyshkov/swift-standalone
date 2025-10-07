@@ -53,8 +53,9 @@ const JobList = ({ jobs, onJobClick, selectedJobId }) => {
     if (state === 'processing') {
       return (
         <>
-          <span style={styles.spinner}></span>
           {getStateText(state)}
+          {' '}
+          <i className="bi bi-arrow-repeat" style={styles.spinner}></i>
         </>
       );
     }
@@ -172,14 +173,22 @@ const styles = {
     display: 'inline-block',
   },
   spinner: {
-    width: '10px',
-    height: '10px',
-    border: '2px solid rgba(255, 255, 255, 0.3)',
-    borderTop: '2px solid white',
-    borderRadius: '50%',
     animation: 'spin 1s linear infinite',
     display: 'inline-block',
   }
 };
+
+// Add keyframes for spinner animation
+const styleSheet = document.styleSheets[0];
+const keyframes = `
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}`;
+try {
+  styleSheet.insertRule(keyframes, styleSheet.cssRules.length);
+} catch (e) {
+  // Ignore if already exists
+}
 
 export default JobList;
