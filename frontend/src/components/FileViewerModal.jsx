@@ -1,32 +1,49 @@
 import React, { useState, useEffect } from 'react';
-import JsonView from '@uiw/react-json-view';
+import Editor from '@monaco-editor/react';
 
 const FileViewerModal = ({ file, onClose }) => {
   const [content, setContent] = useState('');
-  const [isJson, setIsJson] = useState(false);
-  const [jsonData, setJsonData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [language, setLanguage] = useState('plaintext');
 
   useEffect(() => {
     loadFileContent();
   }, [file]);
 
+  const getLanguageFromFilename = (filename) => {
+    const ext = filename.split('.').pop().toLowerCase();
+    const languageMap = {
+      'json': 'json',
+      'xml': 'xml',
+      'html': 'html',
+      'js': 'javascript',
+      'jsx': 'javascript',
+      'ts': 'typescript',
+      'tsx': 'typescript',
+      'py': 'python',
+      'java': 'java',
+      'cpp': 'cpp',
+      'c': 'c',
+      'cs': 'csharp',
+      'css': 'css',
+      'scss': 'scss',
+      'yaml': 'yaml',
+      'yml': 'yaml',
+      'md': 'markdown',
+      'sql': 'sql',
+      'sh': 'shell',
+      'txt': 'plaintext',
+    };
+    return languageMap[ext] || 'plaintext';
+  };
+
   const loadFileContent = async () => {
     try {
       setLoading(true);
-      // Read file content from the server
       const response = await fetch(`http://localhost:8001/api/files/${file.id}/content`);
       const text = await response.text();
       setContent(text);
-
-      // Try to parse as JSON
-      try {
-        const parsed = JSON.parse(text);
-        setJsonData(parsed);
-        setIsJson(true);
-      } catch {
-        setIsJson(false);
-      }
+      setLanguage(getLanguageFromFilename(file.filename));
     } catch (error) {
       console.error('Error loading file:', error);
       setContent('Error loading file content');
@@ -62,14 +79,23 @@ const FileViewerModal = ({ file, onClose }) => {
         <div style={styles.content}>
           {loading ? (
             <div style={styles.loading}>Loading...</div>
-          ) : isJson ? (
-            <JsonView
-              value={jsonData}
-              collapsed={false}
-              style={styles.jsonView}
-            />
           ) : (
-            <pre style={styles.pre}>{content}</pre>
+            <Editor
+              height="600px"
+              language={language}
+              value={content}
+              theme="vs-light"
+              options={{
+                readOnly: true,
+                minimap: { enabled: false },
+                scrollBeyondLastLine: false,
+                fontSize: 14,
+                lineNumbers: 'on',
+                folding: true,
+                wordWrap: 'on',
+                automaticLayout: true,
+              }}
+            />
           )}
         </div>
       </div>
@@ -94,11 +120,13 @@ const styles = {
     backgroundColor: 'white',
     borderRadius: '8px',
     width: '90%',
-    maxWidth: '900px',
+    maxWidth: '1200px',
+    height: 'auto',
     maxHeight: '90vh',
     display: 'flex',
     flexDirection: 'column',
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    overflow: 'hidden',
   },
   header: {
     display: 'flex',
@@ -141,21 +169,9 @@ const styles = {
     justifyContent: 'center',
   },
   content: {
-    flex: 1,
-    overflow: 'auto',
-    padding: '20px',
-  },
-  pre: {
-    margin: 0,
-    whiteSpace: 'pre-wrap',
-    wordWrap: 'break-word',
-    fontFamily: 'monospace',
-    fontSize: '14px',
-    lineHeight: '1.5',
-  },
-  jsonView: {
-    fontSize: '14px',
-    fontFamily: 'monospace',
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
   },
   loading: {
     textAlign: 'center',
