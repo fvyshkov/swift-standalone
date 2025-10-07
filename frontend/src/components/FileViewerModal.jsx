@@ -74,7 +74,8 @@ const FileViewerModal = ({ file, onClose, viewMode = 'input' }) => {
       }
 
       // For input mode, load from API
-      const response = await fetch(`http://localhost:8001/api/files/${file.id}/content`);
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
+      const response = await fetch(`${API_URL}/api/files/${file.id}/content`);
       const text = await response.text();
       setContent(text);
       setLanguage(getLanguageFromFilename(file.filename));

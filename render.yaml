@@ -21,11 +21,11 @@ services:
   - type: web
     name: swift-standalone-frontend
     runtime: static
-    buildCommand: "cd frontend && npm install && npm run build"
+    buildCommand: "cd frontend && npm install && VITE_API_URL=$VITE_API_URL npm run build"
     staticPublishPath: frontend/dist
     envVars:
       - key: VITE_API_URL
-        value: https://swift-standalone-api.onrender.com
+        sync: false
 
 # Database
 databases:

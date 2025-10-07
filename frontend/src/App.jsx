@@ -17,7 +17,8 @@ function App() {
     loadJobs();
 
     // Connect to WebSocket
-    const socket = io('http://localhost:8001');
+    const WS_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
+    const socket = io(WS_URL);
 
     socket.on('job_updated', () => {
       loadJobs();
