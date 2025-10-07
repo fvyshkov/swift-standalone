@@ -16,10 +16,14 @@ from processor import start_job_processing
 # Create tables
 models.Base.metadata.create_all(bind=engine)
 
+# Get CORS origins from environment variable or use default
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", f"{FRONTEND_URL},http://localhost:3000,http://localhost:5173").split(",")
+
 # Create Socket.IO server
 sio = socketio.AsyncServer(
     async_mode='asgi',
-    cors_allowed_origins=["http://localhost:3000", "http://localhost:5173"]
+    cors_allowed_origins=CORS_ORIGINS
 )
 
 app = FastAPI()
@@ -27,7 +31,7 @@ app = FastAPI()
 # CORS for React frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

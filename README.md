@@ -1,118 +1,133 @@
-# Job Manager - FastAPI + React SPA
+# Swift Standalone - Job Management System
 
-Application for managing jobs with automatic file loading from folders.
+FastAPI + React application for managing file processing jobs.
+
+## Features
+
+- Create and manage jobs
+- Process files from input to output folders
+- Real-time updates via WebSockets
+- File content viewer with syntax highlighting
+- Error tracking
+
+## Tech Stack
+
+- **Backend**: FastAPI, SQLAlchemy, Socket.IO
+- **Frontend**: React, Vite, Monaco Editor
+- **Database**: SQLite (local) / PostgreSQL (production)
+
+## Local Development
+
+### Backend
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+python main.py
+```
+
+### Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+## Deploy to Render
+
+### Prerequisites
+1. GitHub account
+2. Render.com account
+3. Push your code to GitHub
+
+### Deployment Steps
+
+1. **Push to GitHub**:
+```bash
+git init
+git add .
+git commit -m "Initial commit"
+git remote add origin <your-repo-url>
+git push -u origin main
+```
+
+2. **On Render.com**:
+   - Click "New +" → "Blueprint"
+   - Connect your GitHub repository
+   - Render will automatically detect `render.yaml`
+   - Click "Apply"
+
+3. **Configure Environment Variables** (in Render dashboard):
+   
+   For **Backend Service**:
+   - `FRONTEND_URL`: `https://your-frontend-url.onrender.com`
+   - `CORS_ORIGINS`: `https://your-frontend-url.onrender.com`
+   
+   For **Frontend Service**:
+   - `VITE_API_URL`: `https://your-backend-url.onrender.com`
+
+4. **Wait for Deploy** (5-10 minutes)
+
+### Manual Setup (Alternative)
+
+If you prefer manual setup instead of Blueprint:
+
+#### Backend
+1. New → Web Service
+2. Connect repository
+3. Settings:
+   - Build Command: `cd backend && pip install -r requirements.txt`
+   - Start Command: `cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT`
+   - Add Disk (1GB) at `/opt/render/project/src/data`
+
+#### Frontend
+1. New → Static Site
+2. Connect repository  
+3. Settings:
+   - Build Command: `cd frontend && npm install && npm run build`
+   - Publish Directory: `frontend/dist`
+
+#### Database
+1. New → PostgreSQL
+2. Name: `swift-standalone-db`
+3. Copy connection string
+4. Add to Backend service as `DATABASE_URL`
 
 ## Project Structure
 
 ```
-swift-standalone/
-├── backend/           # FastAPI server
-│   ├── main.py       # API endpoints
-│   ├── models.py     # SQLAlchemy models
-│   ├── schemas.py    # Pydantic schemas
-│   ├── database.py   # Database configuration
+.
+├── backend/
+│   ├── main.py           # FastAPI app
+│   ├── models.py         # Database models
+│   ├── schemas.py        # Pydantic schemas
+│   ├── database.py       # DB connection
+│   ├── processor.py      # File processing logic
 │   └── requirements.txt
-├── frontend/         # React application
+├── frontend/
 │   ├── src/
-│   │   ├── components/  # React components
-│   │   ├── api/        # API client
-│   │   └── types/      # Data types
-│   └── package.json
-└── data/
-    ├── folder_in/    # Input files
-    └── folder_out/   # Output files
+│   │   ├── components/   # React components
+│   │   ├── api/          # API client
+│   │   └── App.jsx
+│   ├── package.json
+│   └── vite.config.js
+├── data/                 # File storage (gitignored)
+│   ├── folder_in/
+│   └── folder_out/
+└── render.yaml          # Render.com configuration
 ```
 
-## Features
+## Environment Variables
 
-### Jobs
-- **Statuses**: pending, processing, completed, error
-- **Fields**: ID, creation date, user, folder_in, folder_out
-- When creating a job, all files from folder_in are automatically loaded
+### Backend
+- `FRONTEND_URL`: Frontend URL for CORS
+- `CORS_ORIGINS`: Comma-separated allowed origins
+- `DATABASE_URL`: PostgreSQL connection string (Render provides this)
 
-### Files
-- **Statuses**: init, active, success, error
-- **Fields**: ID, filename, path, status, creation date
-- Each file is linked to a job
-- Created in "init" status by default
+### Frontend
+- `VITE_API_URL`: Backend API URL
 
-### Interface
-- **Toolbar**: Icon buttons with tooltips - "Add Job", "Job List", "View Files"
-- **Job List**: Table with all jobs, click to select
-- **Create Form**: Input paths for folder_in and folder_out (pre-filled from last job)
-- **File List**: View files for selected job
+## License
 
-## Installation and Running
-
-### Backend (FastAPI)
-
-```bash
-# Navigate to backend folder
-cd backend
-
-# Create virtual environment
-python -m venv venv
-
-# Activate virtual environment
-# macOS/Linux:
-source venv/bin/activate
-# Windows:
-# venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run server
-python main.py
-```
-
-Server will be available at http://localhost:8001
-
-### Frontend (React)
-
-```bash
-# Navigate to frontend folder (in new terminal)
-cd frontend
-
-# Install dependencies
-npm install
-
-# Run dev server
-npm run dev
-```
-
-Application will be available at http://localhost:3000
-
-## Usage
-
-1. Create test files in `data/folder_in/` folder:
-   ```bash
-   echo "test 1" > data/folder_in/file1.txt
-   echo "test 2" > data/folder_in/file2.txt
-   ```
-
-2. Open application in browser: http://localhost:3000
-
-3. Click ➕ icon and enter paths:
-   - Folder In: `data/folder_in`
-   - Folder Out: `data/folder_out`
-
-4. After job creation, files will be automatically loaded from folder_in
-
-5. Click on a job in the list to select it, then click 📁 icon to view files
-
-## API Endpoints
-
-- `GET /api/jobs` - Get all jobs
-- `GET /api/jobs/{job_id}` - Get job by ID
-- `POST /api/jobs` - Create new job
-- `GET /api/jobs/{job_id}/files` - Get job files
-- `PATCH /api/files/{file_id}/status` - Update file status
-
-## Database
-
-SQLite database `jobs.db` is created automatically on first run.
-
-Tables:
-- `jobs` - jobs
-- `job_files` - job files (one-to-many relationship)
+MIT
