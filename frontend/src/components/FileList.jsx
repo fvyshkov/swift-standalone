@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { getJobFiles } from '../api/jobs';
+import FileToolbar from './FileToolbar';
+import FileViewerModal from './FileViewerModal';
 
 const FileList = ({ jobId, onBack }) => {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [showViewer, setShowViewer] = useState(false);
+  const [hoveredFileId, setHoveredFileId] = useState(null);
 
   useEffect(() => {
     loadFiles();
@@ -14,6 +19,10 @@ const FileList = ({ jobId, onBack }) => {
       setLoading(true);
       const data = await getJobFiles(jobId);
       setFiles(data);
+      // Auto-select first file
+      if (data.length > 0) {
+        setSelectedFile(data[0]);
+      }
     } catch (error) {
       console.error('Error loading files:', error);
     } finally {
@@ -45,58 +54,94 @@ const FileList = ({ jobId, onBack }) => {
     return texts[status] || status;
   };
 
+  const handleFileClick = (file) => {
+    setSelectedFile(file);
+  };
+
+  const handleViewFile = () => {
+    if (selectedFile) {
+      setShowViewer(true);
+    }
+  };
+
+  const handleCloseViewer = () => {
+    setShowViewer(false);
+  };
+
+  const getRowStyle = (file) => {
+    const isSelected = selectedFile?.id === file.id;
+    const isHovered = hoveredFileId === file.id;
+
+    return {
+      ...styles.row,
+      backgroundColor: isSelected ? '#e3f2fd' : (isHovered ? '#f5f5f5' : 'white'),
+      fontWeight: isSelected ? 'bold' : 'normal',
+    };
+  };
+
   if (loading) {
     return <div style={styles.loading}>Loading files...</div>;
   }
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
+    <>
+      <FileToolbar
+        onViewFile={handleViewFile}
+        onClose={onBack}
+        hasSelectedFile={selectedFile !== null}
+      />
+      <div style={styles.container}>
         <h2 style={styles.title}>Files for Job #{jobId}</h2>
-        <button onClick={onBack} style={styles.backButton}>
-          Back to Jobs
-        </button>
-      </div>
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th style={styles.th}>ID</th>
-            <th style={styles.th}>Filename</th>
-            <th style={styles.th}>Path</th>
-            <th style={styles.th}>Status</th>
-            <th style={styles.th}>Created At</th>
-          </tr>
-        </thead>
-        <tbody>
-          {files.length === 0 ? (
+        <table style={styles.table}>
+          <thead>
             <tr>
-              <td colSpan="5" style={styles.noData}>
-                No files for this job
-              </td>
+              <th style={styles.th}>ID</th>
+              <th style={styles.th}>Filename</th>
+              <th style={styles.th}>Path</th>
+              <th style={styles.th}>Status</th>
+              <th style={styles.th}>Created At</th>
             </tr>
-          ) : (
-            files.map((file) => (
-              <tr key={file.id}>
-                <td style={styles.td}>{file.id}</td>
-                <td style={styles.td}>{file.filename}</td>
-                <td style={styles.td}>{file.filepath}</td>
-                <td style={styles.td}>
-                  <span
-                    style={{
-                      ...styles.statusBadge,
-                      backgroundColor: getStatusColor(file.status)
-                    }}
-                  >
-                    {getStatusText(file.status)}
-                  </span>
+          </thead>
+          <tbody>
+            {files.length === 0 ? (
+              <tr>
+                <td colSpan="5" style={styles.noData}>
+                  No files for this job
                 </td>
-                <td style={styles.td}>{formatDate(file.created_at)}</td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
+            ) : (
+              files.map((file) => (
+                <tr
+                  key={file.id}
+                  onClick={() => handleFileClick(file)}
+                  onMouseEnter={() => setHoveredFileId(file.id)}
+                  onMouseLeave={() => setHoveredFileId(null)}
+                  style={getRowStyle(file)}
+                >
+                  <td style={styles.td}>{file.id}</td>
+                  <td style={styles.td}>{file.filename}</td>
+                  <td style={styles.td}>{file.filepath}</td>
+                  <td style={styles.td}>
+                    <span
+                      style={{
+                        ...styles.statusBadge,
+                        backgroundColor: getStatusColor(file.status)
+                      }}
+                    >
+                      {getStatusText(file.status)}
+                    </span>
+                  </td>
+                  <td style={styles.td}>{formatDate(file.created_at)}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+      {showViewer && selectedFile && (
+        <FileViewerModal file={selectedFile} onClose={handleCloseViewer} />
+      )}
+    </>
   );
 };
 
@@ -104,25 +149,9 @@ const styles = {
   container: {
     padding: '20px',
   },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '20px',
-  },
   title: {
+    marginBottom: '20px',
     color: '#333',
-    margin: 0,
-  },
-  backButton: {
-    padding: '10px 20px',
-    backgroundColor: '#2196F3',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: 'bold',
   },
   table: {
     width: '100%',
@@ -140,6 +169,10 @@ const styles = {
   td: {
     padding: '12px',
     borderBottom: '1px solid #ddd',
+  },
+  row: {
+    cursor: 'pointer',
+    transition: 'background-color 0.2s',
   },
   statusBadge: {
     padding: '4px 12px',

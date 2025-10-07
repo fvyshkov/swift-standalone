@@ -36,12 +36,8 @@ function App() {
     setViewMode('add');
   };
 
-  const handleViewList = () => {
+  const handleCancelForm = () => {
     setViewMode('list');
-    // Auto-select first job when returning to list
-    if (jobs.length > 0) {
-      setSelectedJob(jobs[0]);
-    }
   };
 
   const handleSubmitJob = async (jobData) => {
@@ -94,8 +90,6 @@ function App() {
     <div style={styles.app}>
       <Toolbar
         onAdd={handleAddJob}
-        onView={handleViewList}
-        viewMode={viewMode}
         onViewFiles={handleViewFiles}
         onDelete={handleDeleteJob}
         hasSelectedJob={selectedJob !== null}
@@ -110,7 +104,7 @@ function App() {
       {viewMode === 'add' && (
         <JobForm
           onSubmit={handleSubmitJob}
-          onCancel={handleViewList}
+          onCancel={handleCancelForm}
           lastJob={jobs.length > 0 ? jobs[0] : null}
         />
       )}

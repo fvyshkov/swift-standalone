@@ -96,6 +96,23 @@ def delete_job(job_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "Job deleted successfully"}
 
+@app.get("/api/files/{file_id}/content")
+def get_file_content(file_id: int, db: Session = Depends(get_db)):
+    db_file = db.query(models.JobFile).filter(models.JobFile.id == file_id).first()
+    if not db_file:
+        raise HTTPException(status_code=404, detail="File not found")
+
+    try:
+        file_path = Path(db_file.filepath)
+        if not file_path.exists():
+            raise HTTPException(status_code=404, detail="File not found on disk")
+
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        return content
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error reading file: {str(e)}")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)

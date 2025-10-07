@@ -28,3 +28,20 @@ button:hover {
 button:active {
   transform: scale(0.98);
 }
+
+/* Tooltip delay */
+[title] {
+  position: relative;
+}
+
+[title]:hover::before,
+[title]:hover::after {
+  animation: tooltip-appear 0.3s ease-in-out 1s forwards;
+  opacity: 0;
+}
+
+@keyframes tooltip-appear {
+  to {
+    opacity: 1;
+  }
+}

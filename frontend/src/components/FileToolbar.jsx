@@ -1,36 +1,25 @@
 import React from 'react';
 
-const Toolbar = ({ onAdd, onViewFiles, onDelete, hasSelectedJob }) => {
+const FileToolbar = ({ onViewFile, onClose, hasSelectedFile }) => {
   return (
     <div style={styles.toolbar}>
       <button
-        onClick={onAdd}
+        onClick={onViewFile}
+        style={{
+          ...styles.button,
+          ...(hasSelectedFile ? {} : styles.disabledButton)
+        }}
+        title="View File"
+        disabled={!hasSelectedFile}
+      >
+        <i className="bi bi-eye" style={styles.icon}></i>
+      </button>
+      <button
+        onClick={onClose}
         style={styles.button}
-        title="Add Job"
+        title="Close"
       >
-        <i className="bi bi-plus-circle" style={styles.icon}></i>
-      </button>
-      <button
-        onClick={onViewFiles}
-        style={{
-          ...styles.button,
-          ...(hasSelectedJob ? {} : styles.disabledButton)
-        }}
-        title="View Files"
-        disabled={!hasSelectedJob}
-      >
-        <i className="bi bi-folder" style={styles.icon}></i>
-      </button>
-      <button
-        onClick={onDelete}
-        style={{
-          ...styles.button,
-          ...(hasSelectedJob ? {} : styles.disabledButton)
-        }}
-        title="Delete Job"
-        disabled={!hasSelectedJob}
-      >
-        <i className="bi bi-trash" style={styles.icon}></i>
+        <i className="bi bi-x-lg" style={styles.icon}></i>
       </button>
     </div>
   );
@@ -68,4 +57,4 @@ const styles = {
   }
 };
 
-export default Toolbar;
+export default FileToolbar;

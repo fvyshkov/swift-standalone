@@ -20,7 +20,12 @@ const JobForm = ({ onSubmit, onCancel, lastJob }) => {
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>Create New Job</h2>
+      <div style={styles.header}>
+        <h2 style={styles.title}>Create New Job</h2>
+        <button onClick={onCancel} style={styles.closeButton} title="Close" type="button">
+          <i className="bi bi-x-lg"></i>
+        </button>
+      </div>
       <form onSubmit={handleSubmit} style={styles.form}>
         <div style={styles.formGroup}>
           <label style={styles.label}>Folder In:</label>
@@ -48,13 +53,6 @@ const JobForm = ({ onSubmit, onCancel, lastJob }) => {
           <button type="submit" style={styles.submitButton}>
             Create Job
           </button>
-          <button
-            type="button"
-            onClick={onCancel}
-            style={styles.cancelButton}
-          >
-            Cancel
-          </button>
         </div>
       </form>
     </div>
@@ -67,9 +65,27 @@ const styles = {
     maxWidth: '600px',
     margin: '0 auto',
   },
-  title: {
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: '20px',
+  },
+  title: {
     color: '#333',
+    margin: 0,
+  },
+  closeButton: {
+    padding: '8px 12px',
+    backgroundColor: '#fff',
+    color: '#333',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '18px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   form: {
     backgroundColor: 'white',
@@ -103,17 +119,6 @@ const styles = {
     flex: 1,
     padding: '12px',
     backgroundColor: '#4CAF50',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: 'bold',
-  },
-  cancelButton: {
-    flex: 1,
-    padding: '12px',
-    backgroundColor: '#f44336',
     color: 'white',
     border: 'none',
     borderRadius: '4px',
