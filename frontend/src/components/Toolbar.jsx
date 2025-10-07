@@ -8,38 +8,36 @@ const Toolbar = ({ onAdd, onView, viewMode, onViewFiles, onDelete, hasSelectedJo
         style={styles.button}
         title="Add Job"
       >
-        <span style={styles.icon}>➕</span>
+        <i className="bi bi-plus-circle" style={styles.icon}></i>
       </button>
       <button
         onClick={onView}
-        style={{...styles.button, ...styles.viewButton}}
+        style={styles.button}
         title={viewMode === 'list' ? 'Job List' : 'View List'}
       >
-        <span style={styles.icon}>📋</span>
+        <i className="bi bi-list-ul" style={styles.icon}></i>
       </button>
       <button
         onClick={onViewFiles}
         style={{
           ...styles.button,
-          ...styles.filesButton,
           ...(hasSelectedJob ? {} : styles.disabledButton)
         }}
         title="View Files"
         disabled={!hasSelectedJob}
       >
-        <span style={styles.icon}>📁</span>
+        <i className="bi bi-folder" style={styles.icon}></i>
       </button>
       <button
         onClick={onDelete}
         style={{
           ...styles.button,
-          ...styles.deleteButton,
           ...(hasSelectedJob ? {} : styles.disabledButton)
         }}
         title="Delete Job"
         disabled={!hasSelectedJob}
       >
-        <span style={styles.icon}>🗑️</span>
+        <i className="bi bi-trash" style={styles.icon}></i>
       </button>
     </div>
   );
@@ -55,12 +53,12 @@ const styles = {
   },
   button: {
     padding: '12px 16px',
-    backgroundColor: '#4CAF50',
-    color: 'white',
-    border: 'none',
+    backgroundColor: '#fff',
+    color: '#333',
+    border: '1px solid #ddd',
     borderRadius: '4px',
     cursor: 'pointer',
-    fontSize: '20px',
+    fontSize: '18px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -69,17 +67,9 @@ const styles = {
   icon: {
     lineHeight: '1',
   },
-  viewButton: {
-    backgroundColor: '#2196F3',
-  },
-  filesButton: {
-    backgroundColor: '#FF9800',
-  },
-  deleteButton: {
-    backgroundColor: '#f44336',
-  },
   disabledButton: {
-    backgroundColor: '#ccc',
+    backgroundColor: '#f5f5f5',
+    color: '#ccc',
     cursor: 'not-allowed',
     opacity: 0.6,
   }

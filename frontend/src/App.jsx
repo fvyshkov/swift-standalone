@@ -49,7 +49,6 @@ function App() {
       await createJob(jobData);
       await loadJobs();
       setViewMode('list');
-      alert('Job created and files loaded!');
     } catch (error) {
       console.error('Error creating job:', error);
       alert('Error creating job. Check folder paths.');
@@ -71,7 +70,6 @@ function App() {
       try {
         await deleteJob(selectedJob.id);
         await loadJobs();
-        alert('Job deleted successfully!');
       } catch (error) {
         console.error('Error deleting job:', error);
         alert('Error deleting job.');
