@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Toolbar from './components/Toolbar';
+import JobFormToolbar from './components/JobFormToolbar';
 import JobList from './components/JobList';
 import JobForm from './components/JobForm';
 import FileList from './components/FileList';
@@ -40,6 +41,13 @@ function App() {
     setViewMode('list');
   };
 
+  const handleSaveForm = () => {
+    const form = document.getElementById('job-form');
+    if (form) {
+      form.requestSubmit();
+    }
+  };
+
   const handleSubmitJob = async (jobData) => {
     try {
       await createJob(jobData);
@@ -62,7 +70,7 @@ function App() {
   };
 
   const handleDeleteJob = async () => {
-    if (selectedJob && window.confirm(`Delete job #${selectedJob.id}?`)) {
+    if (selectedJob) {
       try {
         await deleteJob(selectedJob.id);
         await loadJobs();
@@ -88,25 +96,32 @@ function App() {
 
   return (
     <div style={styles.app}>
-      <Toolbar
-        onAdd={handleAddJob}
-        onViewFiles={handleViewFiles}
-        onDelete={handleDeleteJob}
-        hasSelectedJob={selectedJob !== null}
-      />
       {viewMode === 'list' && (
-        <JobList
-          jobs={jobs}
-          onJobClick={handleJobClick}
-          selectedJobId={selectedJob?.id}
-        />
+        <>
+          <Toolbar
+            onAdd={handleAddJob}
+            onViewFiles={handleViewFiles}
+            onDelete={handleDeleteJob}
+            hasSelectedJob={selectedJob !== null}
+          />
+          <JobList
+            jobs={jobs}
+            onJobClick={handleJobClick}
+            selectedJobId={selectedJob?.id}
+          />
+        </>
       )}
       {viewMode === 'add' && (
-        <JobForm
-          onSubmit={handleSubmitJob}
-          onCancel={handleCancelForm}
-          lastJob={jobs.length > 0 ? jobs[0] : null}
-        />
+        <>
+          <JobFormToolbar
+            onSave={handleSaveForm}
+            onCancel={handleCancelForm}
+          />
+          <JobForm
+            onSubmit={handleSubmitJob}
+            lastJob={jobs.length > 0 ? jobs[0] : null}
+          />
+        </>
       )}
       {viewMode === 'files' && selectedJob && (
         <FileList

@@ -65,7 +65,7 @@ const FileViewerModal = ({ file, onClose }) => {
           ) : isJson ? (
             <JsonView
               value={jsonData}
-              collapsed={1}
+              collapsed={false}
               style={styles.jsonView}
             />
           ) : (
@@ -84,7 +84,7 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',

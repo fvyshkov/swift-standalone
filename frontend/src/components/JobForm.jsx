@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const JobForm = ({ onSubmit, onCancel, lastJob }) => {
+const JobForm = ({ onSubmit, lastJob }) => {
   const [folderIn, setFolderIn] = useState('');
   const [folderOut, setFolderOut] = useState('');
 
@@ -20,13 +20,8 @@ const JobForm = ({ onSubmit, onCancel, lastJob }) => {
 
   return (
     <div style={styles.container}>
-      <div style={styles.header}>
-        <h2 style={styles.title}>Create New Job</h2>
-        <button onClick={onCancel} style={styles.closeButton} title="Close" type="button">
-          <i className="bi bi-x-lg"></i>
-        </button>
-      </div>
-      <form onSubmit={handleSubmit} style={styles.form}>
+      <h2 style={styles.title}>Create New Job</h2>
+      <form onSubmit={handleSubmit} style={styles.form} id="job-form">
         <div style={styles.formGroup}>
           <label style={styles.label}>Folder In:</label>
           <input
@@ -49,11 +44,6 @@ const JobForm = ({ onSubmit, onCancel, lastJob }) => {
             required
           />
         </div>
-        <div style={styles.buttonGroup}>
-          <button type="submit" style={styles.submitButton}>
-            Create Job
-          </button>
-        </div>
       </form>
     </div>
   );
@@ -65,27 +55,9 @@ const styles = {
     maxWidth: '600px',
     margin: '0 auto',
   },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '20px',
-  },
   title: {
+    marginBottom: '20px',
     color: '#333',
-    margin: 0,
-  },
-  closeButton: {
-    padding: '8px 12px',
-    backgroundColor: '#fff',
-    color: '#333',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '18px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   form: {
     backgroundColor: 'white',
@@ -109,22 +81,6 @@ const styles = {
     borderRadius: '4px',
     fontSize: '14px',
     boxSizing: 'border-box',
-  },
-  buttonGroup: {
-    display: 'flex',
-    gap: '10px',
-    marginTop: '30px',
-  },
-  submitButton: {
-    flex: 1,
-    padding: '12px',
-    backgroundColor: '#4CAF50',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: 'bold',
   }
 };
 
