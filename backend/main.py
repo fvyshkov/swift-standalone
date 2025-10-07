@@ -1,0 +1,91 @@
+from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
+from typing import List
+import os
+from pathlib import Path
+
+import models
+import schemas
+from database import engine, get_db
+from models import JobStatus, FileStatus
+
+# Create tables
+models.Base.metadata.create_all(bind=engine)
+
+app = FastAPI()
+
+# CORS for React frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/api/jobs", response_model=List[schemas.Job])
+def get_jobs(db: Session = Depends(get_db)):
+    jobs = db.query(models.Job).order_by(models.Job.created_at.desc()).all()
+    return jobs
+
+@app.get("/api/jobs/{job_id}", response_model=schemas.Job)
+def get_job(job_id: int, db: Session = Depends(get_db)):
+    job = db.query(models.Job).filter(models.Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return job
+
+@app.post("/api/jobs", response_model=schemas.Job)
+def create_job(job: schemas.JobCreate, db: Session = Depends(get_db)):
+    # Create job
+    db_job = models.Job(
+        folder_in=job.folder_in,
+        folder_out=job.folder_out,
+        status=JobStatus.PENDING,
+        user="user@example.com"
+    )
+    db.add(db_job)
+    db.commit()
+    db.refresh(db_job)
+
+    # Load files from folder_in
+    folder_path = Path(job.folder_in)
+    if folder_path.exists() and folder_path.is_dir():
+        for file_path in folder_path.iterdir():
+            if file_path.is_file():
+                db_file = models.JobFile(
+                    job_id=db_job.id,
+                    filename=file_path.name,
+                    filepath=str(file_path),
+                    status=FileStatus.INIT
+                )
+                db.add(db_file)
+
+        db_job.status = JobStatus.PROCESSING
+        db.commit()
+        db.refresh(db_job)
+
+    return db_job
+
+@app.get("/api/jobs/{job_id}/files", response_model=List[schemas.JobFile])
+def get_job_files(job_id: int, db: Session = Depends(get_db)):
+    job = db.query(models.Job).filter(models.Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return job.files
+
+@app.patch("/api/files/{file_id}/status")
+def update_file_status(file_id: int, status: FileStatus, db: Session = Depends(get_db)):
+    db_file = db.query(models.JobFile).filter(models.JobFile.id == file_id).first()
+    if not db_file:
+        raise HTTPException(status_code=404, detail="File not found")
+
+    db_file.status = status
+    db.commit()
+    db.refresh(db_file)
+    return db_file
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8001)
