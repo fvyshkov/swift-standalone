@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Optional
-from models import JobStatus, FileStatus
+from models import JobState, FileState
 
 class JobFileBase(BaseModel):
     filename: str
@@ -13,7 +13,7 @@ class JobFileCreate(JobFileBase):
 class JobFile(JobFileBase):
     id: int
     job_id: int
-    status: FileStatus
+    state: FileState
     created_at: datetime
 
     class Config:
@@ -28,7 +28,7 @@ class JobCreate(JobBase):
 
 class Job(JobBase):
     id: int
-    status: JobStatus
+    state: JobState
     created_at: datetime
     user: str
     files: List[JobFile] = []

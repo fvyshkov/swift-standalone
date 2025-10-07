@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { io } from 'socket.io-client';
 import Toolbar from './components/Toolbar';
 import JobFormToolbar from './components/JobFormToolbar';
 import JobList from './components/JobList';
@@ -14,6 +15,17 @@ function App() {
 
   useEffect(() => {
     loadJobs();
+
+    // Connect to WebSocket
+    const socket = io('http://localhost:8001');
+
+    socket.on('job_updated', () => {
+      loadJobs();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   useEffect(() => {
@@ -23,6 +35,14 @@ function App() {
         e.preventDefault();
         if (viewMode === 'add') {
           handleSaveForm();
+        }
+      }
+
+      // Cmd+Backspace - delete job
+      if (e.metaKey && e.key === 'Backspace') {
+        e.preventDefault();
+        if (viewMode === 'list' && selectedJob) {
+          handleDeleteJob();
         }
       }
 

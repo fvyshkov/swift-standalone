@@ -62,24 +62,24 @@ const FileList = ({ jobId, onBack }) => {
     return new Date(dateString).toLocaleString('en-US');
   };
 
-  const getStatusColor = (status) => {
+  const getStateColor = (state) => {
     const colors = {
       init: '#9E9E9E',
       active: '#2196F3',
       success: '#4CAF50',
       error: '#F44336'
     };
-    return colors[status] || '#999';
+    return colors[state] || '#999';
   };
 
-  const getStatusText = (status) => {
+  const getStateText = (state) => {
     const texts = {
       init: 'Init',
       active: 'Active',
       success: 'Success',
       error: 'Error'
     };
-    return texts[status] || status;
+    return texts[state] || state;
   };
 
   const handleFileClick = (file) => {
@@ -126,7 +126,7 @@ const FileList = ({ jobId, onBack }) => {
               <th style={styles.th}>ID</th>
               <th style={styles.th}>Filename</th>
               <th style={styles.th}>Path</th>
-              <th style={styles.th}>Status</th>
+              <th style={styles.th}>State</th>
               <th style={styles.th}>Created At</th>
             </tr>
           </thead>
@@ -153,10 +153,10 @@ const FileList = ({ jobId, onBack }) => {
                     <span
                       style={{
                         ...styles.statusBadge,
-                        backgroundColor: getStatusColor(file.status)
+                        backgroundColor: getStateColor(file.state)
                       }}
                     >
-                      {getStatusText(file.status)}
+                      {getStateText(file.state)}
                     </span>
                   </td>
                   <td style={styles.td}>{formatDate(file.created_at)}</td>

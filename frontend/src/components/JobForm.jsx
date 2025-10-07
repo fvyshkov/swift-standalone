@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 
 const JobForm = ({ onSubmit, lastJob }) => {
-  const [folderIn, setFolderIn] = useState('');
-  const [folderOut, setFolderOut] = useState('');
+  const defaultFolderIn = '/Users/fvyshkov/PycharmProjects/swift-standalone/data/folder_in';
+  const defaultFolderOut = '/Users/fvyshkov/PycharmProjects/swift-standalone/data/folder_out';
+
+  const [folderIn, setFolderIn] = useState(defaultFolderIn);
+  const [folderOut, setFolderOut] = useState(defaultFolderOut);
 
   useEffect(() => {
     if (lastJob) {
-      setFolderIn(lastJob.folder_in || '');
-      setFolderOut(lastJob.folder_out || '');
+      setFolderIn(lastJob.folder_in || defaultFolderIn);
+      setFolderOut(lastJob.folder_out || defaultFolderOut);
     }
   }, [lastJob]);
 

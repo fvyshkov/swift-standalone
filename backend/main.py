@@ -5,14 +5,22 @@ from sqlalchemy.orm import Session
 from typing import List
 import os
 from pathlib import Path
+import socketio
 
 import models
 import schemas
 from database import engine, get_db
-from models import JobStatus, FileStatus
+from models import JobState, FileState
+from processor import start_job_processing
 
 # Create tables
 models.Base.metadata.create_all(bind=engine)
+
+# Create Socket.IO server
+sio = socketio.AsyncServer(
+    async_mode='asgi',
+    cors_allowed_origins=["http://localhost:3000", "http://localhost:5173"]
+)
 
 app = FastAPI()
 
@@ -24,6 +32,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Create Socket.IO ASGI app
+socket_app = socketio.ASGIApp(sio, app)
 
 @app.get("/api/jobs", response_model=List[schemas.Job])
 def get_jobs(db: Session = Depends(get_db)):
@@ -43,7 +54,6 @@ def create_job(job: schemas.JobCreate, db: Session = Depends(get_db)):
     db_job = models.Job(
         folder_in=job.folder_in,
         folder_out=job.folder_out,
-        status=JobStatus.PENDING,
         user="user@example.com"
     )
     db.add(db_job)
@@ -59,13 +69,15 @@ def create_job(job: schemas.JobCreate, db: Session = Depends(get_db)):
                     job_id=db_job.id,
                     filename=file_path.name,
                     filepath=str(file_path),
-                    status=FileStatus.INIT
+                    state=FileState.INIT
                 )
                 db.add(db_file)
 
-        db_job.status = JobStatus.PROCESSING
         db.commit()
         db.refresh(db_job)
+
+        # Start background processing
+        start_job_processing(db_job.id, sio)
 
     return db_job
 
@@ -76,13 +88,13 @@ def get_job_files(job_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Job not found")
     return job.files
 
-@app.patch("/api/files/{file_id}/status")
-def update_file_status(file_id: int, status: FileStatus, db: Session = Depends(get_db)):
+@app.patch("/api/files/{file_id}/state")
+def update_file_state(file_id: int, state: FileState, db: Session = Depends(get_db)):
     db_file = db.query(models.JobFile).filter(models.JobFile.id == file_id).first()
     if not db_file:
         raise HTTPException(status_code=404, detail="File not found")
 
-    db_file.status = status
+    db_file.state = state
     db.commit()
     db.refresh(db_file)
     return db_file
@@ -116,4 +128,4 @@ def get_file_content(file_id: int, db: Session = Depends(get_db)):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    uvicorn.run(socket_app, host="0.0.0.0", port=8001)

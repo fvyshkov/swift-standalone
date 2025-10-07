@@ -1,0 +1,2 @@
+Error processing file: test2.txt
+Simulated error for demonstration purposes.
