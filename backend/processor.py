@@ -8,6 +8,7 @@ from database import SessionLocal
 import models
 from models import FileState, JobState
 import asyncio
+from datetime import datetime
 
 def process_job_files(job_id: int, sio=None):
     """Background processor for job files with 5-second delay and 50/50 success/error rate"""
@@ -47,15 +48,25 @@ def process_job_files(job_id: int, sio=None):
                 print(f"Error copying file {file.filename}: {copy_error}")
 
             if success:
+                # Success - wrap content in XML
+                xml_content = f'<result>{file.content}</result>'
+                file.content_out = xml_content
+                file.error = None
                 file.state = FileState.SUCCESS
             else:
-                # Simulate error - but file is still copied
+                # Error - write error message
+                error_message = f"Error processing file: {file.filename}\nSimulated error for demonstration purposes."
+                file.content_out = None
+                file.error = error_message
                 file.state = FileState.ERROR
-                # Create error file
+
+                # Create error file in output folder
                 error_file_path = folder_out / f"{source_path.stem}_error.txt"
                 with open(error_file_path, 'w') as f:
-                    f.write(f"Error processing file: {file.filename}\nSimulated error for demonstration purposes.")
+                    f.write(error_message)
 
+            # Set processed timestamp
+            file.processed_at = datetime.utcnow()
             db.commit()
 
             # Notify clients

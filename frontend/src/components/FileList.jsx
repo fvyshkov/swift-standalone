@@ -9,6 +9,7 @@ const FileList = ({ jobId, onBack }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [showViewer, setShowViewer] = useState(false);
   const [hoveredFileId, setHoveredFileId] = useState(null);
+  const [viewMode, setViewMode] = useState('input'); // 'input', 'output', 'error'
 
   useEffect(() => {
     loadFiles();
@@ -88,6 +89,21 @@ const FileList = ({ jobId, onBack }) => {
 
   const handleViewFile = () => {
     if (selectedFile) {
+      setViewMode('input');
+      setShowViewer(true);
+    }
+  };
+
+  const handleViewOut = () => {
+    if (selectedFile && selectedFile.processed_at) {
+      setViewMode('output');
+      setShowViewer(true);
+    }
+  };
+
+  const handleViewError = () => {
+    if (selectedFile && selectedFile.error) {
+      setViewMode('error');
       setShowViewer(true);
     }
   };
@@ -95,6 +111,9 @@ const FileList = ({ jobId, onBack }) => {
   const handleCloseViewer = () => {
     setShowViewer(false);
   };
+
+  const canViewOut = selectedFile && selectedFile.processed_at !== null;
+  const canViewError = selectedFile && selectedFile.error !== null;
 
   const getRowStyle = (file) => {
     const isSelected = selectedFile?.id === file.id;
@@ -115,8 +134,13 @@ const FileList = ({ jobId, onBack }) => {
     <>
       <FileToolbar
         onViewFile={handleViewFile}
+        onViewOut={handleViewOut}
+        onViewError={handleViewError}
         onClose={onBack}
+        onRefresh={loadFiles}
         hasSelectedFile={selectedFile !== null}
+        canViewOut={canViewOut}
+        canViewError={canViewError}
       />
       <div style={styles.container}>
         <h2 style={styles.title}>Files for Job #{jobId}</h2>
@@ -125,15 +149,16 @@ const FileList = ({ jobId, onBack }) => {
             <tr>
               <th style={styles.th}>ID</th>
               <th style={styles.th}>Filename</th>
-              <th style={styles.th}>Path</th>
               <th style={styles.th}>State</th>
+              <th style={styles.th}>Error</th>
               <th style={styles.th}>Created At</th>
+              <th style={styles.th}>Processed At</th>
             </tr>
           </thead>
           <tbody>
             {files.length === 0 ? (
               <tr>
-                <td colSpan="5" style={styles.noData}>
+                <td colSpan="6" style={styles.noData}>
                   No files for this job
                 </td>
               </tr>
@@ -148,7 +173,6 @@ const FileList = ({ jobId, onBack }) => {
                 >
                   <td style={styles.td}>{file.id}</td>
                   <td style={styles.td}>{file.filename}</td>
-                  <td style={styles.td}>{file.filepath}</td>
                   <td style={styles.td}>
                     <span
                       style={{
@@ -159,7 +183,9 @@ const FileList = ({ jobId, onBack }) => {
                       {getStateText(file.state)}
                     </span>
                   </td>
+                  <td style={styles.td}>{file.error ? file.error.substring(0, 50) + '...' : '-'}</td>
                   <td style={styles.td}>{formatDate(file.created_at)}</td>
+                  <td style={styles.td}>{file.processed_at ? formatDate(file.processed_at) : '-'}</td>
                 </tr>
               ))
             )}
@@ -167,7 +193,7 @@ const FileList = ({ jobId, onBack }) => {
         </table>
       </div>
       {showViewer && selectedFile && (
-        <FileViewerModal file={selectedFile} onClose={handleCloseViewer} />
+        <FileViewerModal file={selectedFile} onClose={handleCloseViewer} viewMode={viewMode} />
       )}
     </>
   );
@@ -180,6 +206,8 @@ const styles = {
   title: {
     marginBottom: '20px',
     color: '#333',
+    backgroundColor: 'white',
+    padding: '20px',
   },
   table: {
     width: '100%',
@@ -188,11 +216,12 @@ const styles = {
     boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
   },
   th: {
-    backgroundColor: '#4CAF50',
-    color: 'white',
+    backgroundColor: 'white',
+    color: '#333',
     padding: '12px',
     textAlign: 'left',
     fontWeight: 'bold',
+    borderBottom: '2px solid #ddd',
   },
   td: {
     padding: '12px',

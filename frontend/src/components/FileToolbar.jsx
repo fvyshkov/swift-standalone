@@ -1,6 +1,6 @@
 import React from 'react';
 
-const FileToolbar = ({ onViewFile, onClose, hasSelectedFile }) => {
+const FileToolbar = ({ onViewFile, onViewOut, onViewError, onClose, onRefresh, hasSelectedFile, canViewOut, canViewError }) => {
   return (
     <div style={styles.toolbar}>
       <button
@@ -9,10 +9,39 @@ const FileToolbar = ({ onViewFile, onClose, hasSelectedFile }) => {
           ...styles.button,
           ...(hasSelectedFile ? {} : styles.disabledButton)
         }}
-        title="View File"
+        title="View Input File"
         disabled={!hasSelectedFile}
       >
         <i className="bi bi-eye" style={styles.icon}></i>
+      </button>
+      <button
+        onClick={onViewOut}
+        style={{
+          ...styles.button,
+          ...(canViewOut ? {} : styles.disabledButton)
+        }}
+        title="View Output File"
+        disabled={!canViewOut}
+      >
+        <i className="bi bi-file-earmark-text" style={styles.icon}></i>
+      </button>
+      <button
+        onClick={onViewError}
+        style={{
+          ...styles.button,
+          ...(canViewError ? {} : styles.disabledButton)
+        }}
+        title="View Error"
+        disabled={!canViewError}
+      >
+        <i className="bi bi-exclamation-triangle" style={styles.icon}></i>
+      </button>
+      <button
+        onClick={onRefresh}
+        style={styles.button}
+        title="Refresh"
+      >
+        <i className="bi bi-arrow-clockwise" style={styles.icon}></i>
       </button>
       <button
         onClick={onClose}
@@ -35,9 +64,9 @@ const styles = {
   },
   button: {
     padding: '12px 16px',
-    backgroundColor: '#fff',
-    color: '#333',
-    border: '1px solid #ddd',
+    backgroundColor: 'white',
+    color: '#2196F3',
+    border: '2px solid white',
     borderRadius: '4px',
     cursor: 'pointer',
     fontSize: '18px',
@@ -50,10 +79,10 @@ const styles = {
     lineHeight: '1',
   },
   disabledButton: {
-    backgroundColor: '#f5f5f5',
-    color: '#ccc',
+    backgroundColor: '#B0BEC5',
+    color: '#fff',
     cursor: 'not-allowed',
-    opacity: 0.6,
+    opacity: 0.5,
   }
 };
 

@@ -49,8 +49,11 @@ class JobFile(Base):
     job_id = Column(Integer, ForeignKey("jobs.id"))
     filename = Column(String)
     filepath = Column(String)
-    content = Column(Text)  # Store file content in DB
+    content = Column(Text)  # Input file content
+    content_out = Column(Text)  # Output content (XML wrapped or empty)
+    error = Column(Text)  # Error message if any
     state = Column(SQLEnum(FileState), default=FileState.INIT)
     created_at = Column(DateTime, default=datetime.utcnow)
+    processed_at = Column(DateTime)  # When processing finished
 
     job = relationship("Job", back_populates="files")

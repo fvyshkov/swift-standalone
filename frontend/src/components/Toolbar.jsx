@@ -46,9 +46,9 @@ const styles = {
   },
   button: {
     padding: '12px 16px',
-    backgroundColor: '#fff',
-    color: '#333',
-    border: '1px solid #ddd',
+    backgroundColor: 'white',
+    color: '#2196F3',
+    border: '2px solid white',
     borderRadius: '4px',
     cursor: 'pointer',
     fontSize: '18px',
@@ -61,10 +61,10 @@ const styles = {
     lineHeight: '1',
   },
   disabledButton: {
-    backgroundColor: '#f5f5f5',
-    color: '#ccc',
+    backgroundColor: '#B0BEC5',
+    color: '#fff',
     cursor: 'not-allowed',
-    opacity: 0.6,
+    opacity: 0.5,
   }
 };
 

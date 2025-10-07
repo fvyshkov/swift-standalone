@@ -136,6 +136,8 @@ const styles = {
   title: {
     marginBottom: '20px',
     color: '#333',
+    backgroundColor: 'white',
+    padding: '20px',
   },
   table: {
     width: '100%',
@@ -144,11 +146,12 @@ const styles = {
     boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
   },
   th: {
-    backgroundColor: '#4CAF50',
-    color: 'white',
+    backgroundColor: 'white',
+    color: '#333',
     padding: '12px',
     textAlign: 'left',
     fontWeight: 'bold',
+    borderBottom: '2px solid #ddd',
   },
   td: {
     padding: '12px',

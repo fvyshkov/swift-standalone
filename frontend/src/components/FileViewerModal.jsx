@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 
-const FileViewerModal = ({ file, onClose }) => {
+const FileViewerModal = ({ file, onClose, viewMode = 'input' }) => {
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
   const [language, setLanguage] = useState('plaintext');
 
   useEffect(() => {
     loadFileContent();
-  }, [file]);
+  }, [file, viewMode]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -48,9 +48,32 @@ const FileViewerModal = ({ file, onClose }) => {
     return languageMap[ext] || 'plaintext';
   };
 
+  const getContentForViewMode = () => {
+    switch (viewMode) {
+      case 'output':
+        return file.content_out || 'No output content available';
+      case 'error':
+        return file.error || 'No error message';
+      case 'input':
+      default:
+        return null; // Will load from API
+    }
+  };
+
   const loadFileContent = async () => {
     try {
       setLoading(true);
+
+      // For output and error modes, use content from file object
+      const contentFromMode = getContentForViewMode();
+      if (contentFromMode !== null) {
+        setContent(contentFromMode);
+        setLanguage(viewMode === 'output' ? 'xml' : 'plaintext');
+        setLoading(false);
+        return;
+      }
+
+      // For input mode, load from API
       const response = await fetch(`http://localhost:8001/api/files/${file.id}/content`);
       const text = await response.text();
       setContent(text);
@@ -73,11 +96,20 @@ const FileViewerModal = ({ file, onClose }) => {
     }
   };
 
+  const getModalTitle = () => {
+    const modeLabel = {
+      'input': 'Input',
+      'output': 'Output',
+      'error': 'Error'
+    }[viewMode] || 'Input';
+    return `${file.filename} - ${modeLabel}`;
+  };
+
   return (
     <div style={styles.overlay} onClick={handleOverlayClick}>
       <div style={styles.modal}>
         <div style={styles.header}>
-          <h3 style={styles.title}>{file.filename}</h3>
+          <h3 style={styles.title}>{getModalTitle()}</h3>
           <div style={styles.actions}>
             <button onClick={handleCopy} style={styles.button} title="Copy to clipboard">
               <i className="bi bi-clipboard"></i>

@@ -31,9 +31,9 @@ const styles = {
   },
   button: {
     padding: '12px 16px',
-    backgroundColor: '#fff',
-    color: '#333',
-    border: '1px solid #ddd',
+    backgroundColor: 'white',
+    color: '#2196F3',
+    border: '2px solid white',
     borderRadius: '4px',
     cursor: 'pointer',
     fontSize: '18px',
