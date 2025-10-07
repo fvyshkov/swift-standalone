@@ -75,7 +75,6 @@ const JobList = ({ jobs, onJobClick, selectedJobId }) => {
     return {
       ...styles.row,
       backgroundColor: isSelected ? '#e3f2fd' : (isHovered ? '#f5f5f5' : 'white'),
-      fontWeight: isSelected ? 'bold' : 'normal',
     };
   };
 

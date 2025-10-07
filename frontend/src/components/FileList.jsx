@@ -112,8 +112,8 @@ const FileList = ({ jobId, onBack }) => {
     setShowViewer(false);
   };
 
-  const canViewOut = selectedFile && selectedFile.processed_at !== null;
-  const canViewError = selectedFile && selectedFile.error !== null;
+  const canViewOut = selectedFile && selectedFile.content_out;
+  const canViewError = selectedFile && selectedFile.error;
 
   const getRowStyle = (file) => {
     const isSelected = selectedFile?.id === file.id;
@@ -122,7 +122,6 @@ const FileList = ({ jobId, onBack }) => {
     return {
       ...styles.row,
       backgroundColor: isSelected ? '#e3f2fd' : (isHovered ? '#f5f5f5' : 'white'),
-      fontWeight: isSelected ? 'bold' : 'normal',
     };
   };
 
@@ -180,7 +179,10 @@ const FileList = ({ jobId, onBack }) => {
                         backgroundColor: getStateColor(file.state)
                       }}
                     >
-                      {getStateText(file.state)}
+                      {file.state === 'active' && (
+                        <i className="bi bi-arrow-repeat" style={styles.spinner}></i>
+                      )}
+                      {' '}{getStateText(file.state)}
                     </span>
                   </td>
                   <td style={styles.td}>{file.error ? file.error.substring(0, 50) + '...' : '-'}</td>
@@ -249,7 +251,24 @@ const styles = {
     padding: '40px',
     textAlign: 'center',
     color: '#999',
+  },
+  spinner: {
+    animation: 'spin 1s linear infinite',
+    display: 'inline-block',
   }
 };
+
+// Add keyframes for spinner animation
+const styleSheet = document.styleSheets[0];
+const keyframes = `
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}`;
+try {
+  styleSheet.insertRule(keyframes, styleSheet.cssRules.length);
+} catch (e) {
+  // Ignore if already exists
+}
 
 export default FileList;

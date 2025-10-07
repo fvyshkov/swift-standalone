@@ -14,7 +14,11 @@ class JobFile(JobFileBase):
     id: int
     job_id: int
     state: FileState
+    content: Optional[str] = None
+    content_out: Optional[str] = None
+    error: Optional[str] = None
     created_at: datetime
+    processed_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
