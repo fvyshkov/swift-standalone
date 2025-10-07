@@ -1,22 +1,20 @@
 import React, { useState } from 'react';
 
 const JobForm = ({ onSubmit }) => {
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (selectedFile) {
-      onSubmit(selectedFile);
+    if (selectedFiles) {
+      onSubmit(selectedFiles);
     }
   };
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file && file.name.endsWith('.zip')) {
-      setSelectedFile(file);
-    } else {
-      alert('Please select a ZIP file');
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
+      setSelectedFiles(files);
     }
   };
 
@@ -32,13 +30,26 @@ const JobForm = ({ onSubmit }) => {
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file && file.name.endsWith('.zip')) {
-      setSelectedFile(file);
-    } else {
-      alert('Please select a ZIP file');
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      setSelectedFiles(files);
     }
   };
+
+  // Get folder name from first file path
+  const getFolderName = () => {
+    if (!selectedFiles || selectedFiles.length === 0) return '';
+    const firstFile = selectedFiles[0];
+    // Try to extract folder name from webkitRelativePath
+    if (firstFile.webkitRelativePath) {
+      const parts = firstFile.webkitRelativePath.split('/');
+      return parts[0]; // First part is folder name
+    }
+    return 'uploaded-files';
+  };
+
+  const folderIn = selectedFiles ? `data/folder_in/${getFolderName()}` : '';
+  const folderOut = selectedFiles ? `data/folder_out/${getFolderName()}` : '';
 
   return (
     <div style={styles.container}>
@@ -47,35 +58,61 @@ const JobForm = ({ onSubmit }) => {
         <div
           style={{
             ...styles.dropZone,
-            ...(isDragging ? styles.dropZoneActive : {})
+            ...(isDragging ? styles.dropZoneActive : {}),
+            ...(selectedFiles ? { padding: '30px 20px' } : {})
           }}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          onClick={() => document.getElementById('file-input').click()}
+          onClick={() => !selectedFiles && document.getElementById('file-input').click()}
         >
           <input
             id="file-input"
             type="file"
-            accept=".zip"
+            multiple
+            webkitdirectory=""
+            directory=""
             onChange={handleFileChange}
             style={styles.fileInput}
           />
-          <i className="bi bi-cloud-upload" style={styles.uploadIcon}></i>
-          {selectedFile ? (
-            <div>
-              <p style={styles.fileName}>{selectedFile.name}</p>
-              <p style={styles.fileSize}>
-                {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-              </p>
-            </div>
+          {!selectedFiles ? (
+            <>
+              <i className="bi bi-folder2-open" style={styles.uploadIcon}></i>
+              <p style={styles.dropText}>Select folder with files</p>
+              <p style={styles.orText}>or drag & drop files here</p>
+            </>
           ) : (
-            <div>
-              <p style={styles.dropText}>Drag & drop ZIP file here</p>
-              <p style={styles.orText}>or click to browse</p>
+            <div style={{ textAlign: 'left', width: '100%' }}>
+              <div style={styles.selectedInfo}>
+                <i className="bi bi-check-circle-fill" style={styles.checkIcon}></i>
+                <span>{selectedFiles.length} files selected ({(selectedFiles.reduce((acc, f) => acc + f.size, 0) / 1024 / 1024).toFixed(2)} MB)</span>
+              </div>
             </div>
           )}
         </div>
+
+        {selectedFiles && (
+          <div style={styles.pathsContainer}>
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Folder In:</label>
+              <input
+                type="text"
+                value={folderIn}
+                readOnly
+                style={styles.input}
+              />
+            </div>
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Folder Out:</label>
+              <input
+                type="text"
+                value={folderOut}
+                readOnly
+                style={styles.input}
+              />
+            </div>
+          </div>
+        )}
       </form>
     </div>
   );
@@ -139,6 +176,41 @@ const styles = {
     fontSize: '14px',
     color: '#666',
     margin: '5px 0',
+  },
+  pathsContainer: {
+    marginTop: '20px',
+  },
+  formGroup: {
+    marginBottom: '15px',
+  },
+  label: {
+    display: 'block',
+    marginBottom: '5px',
+    fontWeight: 'bold',
+    color: '#555',
+    fontSize: '14px',
+  },
+  input: {
+    width: '100%',
+    padding: '10px',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    fontSize: '14px',
+    boxSizing: 'border-box',
+    backgroundColor: '#f9f9f9',
+    color: '#666',
+  },
+  selectedInfo: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: '10px',
+    backgroundColor: '#e8f5e9',
+    borderRadius: '4px',
+  },
+  checkIcon: {
+    fontSize: '24px',
+    color: '#4CAF50',
   }
 };
 

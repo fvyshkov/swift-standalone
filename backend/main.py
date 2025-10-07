@@ -56,7 +56,7 @@ def get_job(job_id: int, db: Session = Depends(get_db)):
 
 @app.post("/api/jobs", response_model=schemas.Job)
 async def create_job(
-    file: UploadFile = File(...),
+    files: List[UploadFile] = File(...),
     db: Session = Depends(get_db)
 ):
     # Base data directory
@@ -65,8 +65,8 @@ async def create_job(
 
     # Create job
     db_job = models.Job(
-        folder_in="",  # Will be set after extraction
-        folder_out="",  # Will be set after extraction
+        folder_in="",  # Will be set after saving files
+        folder_out="",  # Will be set after saving files
         user="user@example.com"
     )
     db.add(db_job)
@@ -84,48 +84,42 @@ async def create_job(
     db_job.folder_out = str(job_folder_out)
     db.commit()
 
-    # Save and extract ZIP file
-    zip_path = data_dir / f"temp_{db_job.id}.zip"
-    try:
-        # Save uploaded file
-        with open(zip_path, "wb") as buffer:
-            content = await file.read()
+    # Save uploaded files
+    for uploaded_file in files:
+        # Save file to folder_in
+        file_path = job_folder_in / uploaded_file.filename
+
+        # Create subdirectories if needed (preserve folder structure)
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Save file
+        with open(file_path, "wb") as buffer:
+            content = await uploaded_file.read()
             buffer.write(content)
 
-        # Extract ZIP
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            zip_ref.extractall(job_folder_in)
+        # Read file content for database
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                file_content = f.read()
+        except Exception as e:
+            print(f"Error reading file {file_path}: {e}")
+            file_content = ""
 
-        # Load files into database
-        for file_path in job_folder_in.rglob('*'):
-            if file_path.is_file():
-                # Read file content
-                try:
-                    with open(file_path, 'r', encoding='utf-8') as f:
-                        file_content = f.read()
-                except Exception as e:
-                    print(f"Error reading file {file_path}: {e}")
-                    file_content = ""
+        # Add to database
+        db_file = models.JobFile(
+            job_id=db_job.id,
+            filename=uploaded_file.filename,
+            filepath=str(file_path),
+            content=file_content,
+            state=FileState.INIT
+        )
+        db.add(db_file)
 
-                db_file = models.JobFile(
-                    job_id=db_job.id,
-                    filename=file_path.name,
-                    filepath=str(file_path),
-                    content=file_content,
-                    state=FileState.INIT
-                )
-                db.add(db_file)
+    db.commit()
+    db.refresh(db_job)
 
-        db.commit()
-        db.refresh(db_job)
-
-        # Start background processing
-        start_job_processing(db_job.id, sio)
-
-    finally:
-        # Clean up temp ZIP file
-        if zip_path.exists():
-            zip_path.unlink()
+    # Start background processing
+    start_job_processing(db_job.id, sio)
 
     return db_job
 

@@ -12,9 +12,18 @@ export const getJob = async (jobId) => {
   return response.data;
 };
 
-export const createJob = async (file) => {
+export const createJob = async (files) => {
   const formData = new FormData();
-  formData.append('file', file);
+
+  // If files is an array, append each file
+  if (Array.isArray(files)) {
+    files.forEach(file => {
+      formData.append('files', file);
+    });
+  } else {
+    // Single file (for backward compatibility)
+    formData.append('files', files);
+  }
 
   const response = await axios.post(`${API_BASE_URL}/api/jobs`, formData, {
     headers: {
