@@ -16,6 +16,43 @@ function App() {
     loadJobs();
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Cmd+S / Ctrl+S - save form
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault();
+        if (viewMode === 'add') {
+          handleSaveForm();
+        }
+      }
+
+      // Escape - close forms (not file list, as file viewer modal handles its own escape)
+      if (e.key === 'Escape') {
+        if (viewMode === 'add') {
+          handleCancelForm();
+        }
+      }
+
+      // Arrow navigation in job list
+      if (viewMode === 'list' && jobs.length > 0) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          const currentIndex = jobs.findIndex(j => j.id === selectedJob?.id);
+          const nextIndex = currentIndex < jobs.length - 1 ? currentIndex + 1 : currentIndex;
+          setSelectedJob(jobs[nextIndex]);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          const currentIndex = jobs.findIndex(j => j.id === selectedJob?.id);
+          const prevIndex = currentIndex > 0 ? currentIndex - 1 : 0;
+          setSelectedJob(jobs[prevIndex]);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [viewMode, jobs, selectedJob]);
+
   const loadJobs = async () => {
     try {
       setLoading(true);

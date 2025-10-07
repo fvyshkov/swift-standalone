@@ -14,6 +14,34 @@ const FileList = ({ jobId, onBack }) => {
     loadFiles();
   }, [jobId]);
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Escape - close file list (only when modal is not open)
+      if (e.key === 'Escape' && !showViewer) {
+        onBack();
+        return;
+      }
+
+      // Arrow navigation in file list
+      if (files.length > 0 && !showViewer) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          const currentIndex = files.findIndex(f => f.id === selectedFile?.id);
+          const nextIndex = currentIndex < files.length - 1 ? currentIndex + 1 : currentIndex;
+          setSelectedFile(files[nextIndex]);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          const currentIndex = files.findIndex(f => f.id === selectedFile?.id);
+          const prevIndex = currentIndex > 0 ? currentIndex - 1 : 0;
+          setSelectedFile(files[prevIndex]);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [files, selectedFile, showViewer, onBack]);
+
   const loadFiles = async () => {
     try {
       setLoading(true);

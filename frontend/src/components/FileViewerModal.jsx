@@ -10,6 +10,17 @@ const FileViewerModal = ({ file, onClose }) => {
     loadFileContent();
   }, [file]);
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   const getLanguageFromFilename = (filename) => {
     const ext = filename.split('.').pop().toLowerCase();
     const languageMap = {
