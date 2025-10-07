@@ -3,7 +3,7 @@ import Toolbar from './components/Toolbar';
 import JobList from './components/JobList';
 import JobForm from './components/JobForm';
 import FileList from './components/FileList';
-import { getJobs, createJob } from './api/jobs';
+import { getJobs, createJob, deleteJob } from './api/jobs';
 
 function App() {
   const [jobs, setJobs] = useState([]);
@@ -66,6 +66,19 @@ function App() {
     }
   };
 
+  const handleDeleteJob = async () => {
+    if (selectedJob && window.confirm(`Delete job #${selectedJob.id}?`)) {
+      try {
+        await deleteJob(selectedJob.id);
+        await loadJobs();
+        alert('Job deleted successfully!');
+      } catch (error) {
+        console.error('Error deleting job:', error);
+        alert('Error deleting job.');
+      }
+    }
+  };
+
   const handleBackToList = () => {
     setViewMode('list');
     // Keep the selected job when returning from files view
@@ -86,6 +99,7 @@ function App() {
         onView={handleViewList}
         viewMode={viewMode}
         onViewFiles={handleViewFiles}
+        onDelete={handleDeleteJob}
         hasSelectedJob={selectedJob !== null}
       />
       {viewMode === 'list' && (

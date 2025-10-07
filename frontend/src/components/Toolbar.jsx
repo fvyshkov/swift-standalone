@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Toolbar = ({ onAdd, onView, viewMode, onViewFiles, hasSelectedJob }) => {
+const Toolbar = ({ onAdd, onView, viewMode, onViewFiles, onDelete, hasSelectedJob }) => {
   return (
     <div style={styles.toolbar}>
       <button
@@ -28,6 +28,18 @@ const Toolbar = ({ onAdd, onView, viewMode, onViewFiles, hasSelectedJob }) => {
         disabled={!hasSelectedJob}
       >
         <span style={styles.icon}>📁</span>
+      </button>
+      <button
+        onClick={onDelete}
+        style={{
+          ...styles.button,
+          ...styles.deleteButton,
+          ...(hasSelectedJob ? {} : styles.disabledButton)
+        }}
+        title="Delete Job"
+        disabled={!hasSelectedJob}
+      >
+        <span style={styles.icon}>🗑️</span>
       </button>
     </div>
   );
@@ -62,6 +74,9 @@ const styles = {
   },
   filesButton: {
     backgroundColor: '#FF9800',
+  },
+  deleteButton: {
+    backgroundColor: '#f44336',
   },
   disabledButton: {
     backgroundColor: '#ccc',

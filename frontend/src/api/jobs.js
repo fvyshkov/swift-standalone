@@ -28,3 +28,8 @@ export const updateFileStatus = async (fileId, status) => {
   });
   return response.data;
 };
+
+export const deleteJob = async (jobId) => {
+  const response = await axios.delete(`${API_BASE_URL}/jobs/${jobId}`);
+  return response.data;
+};
